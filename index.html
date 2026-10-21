@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tài Chính Gia Đình — Quản lý chi tiêu & liên kết MoMo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#171a27;--card:#222638;--card2:#2a2f44;--text:#eef1f8;--muted:#8b9ab8;
+  --accent:#d4a24a;--accent-soft:rgba(212,162,74,.16);
+  --accent2:#4fa893;--accent2-soft:rgba(79,168,147,.16);
+  --border:rgba(139,154,184,.14);
+  --ok:#34d399;--warn:#fbbf24;--bad:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;min-height:100%}
+body{background:
+  radial-gradient(700px 420px at 12% -8%,rgba(79,168,147,.12),transparent 60%),
+  radial-gradient(900px 520px at 92% -12%,rgba(212,162,74,.14),transparent 60%),
+  var(--bg);padding-bottom:60px}
+.wrap{max-width:1080px;margin:0 auto;padding:22px 16px}
+h1,h2,h3{font-family:'Cormorant Garamond',serif;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:transform .2s,border-color .2s}
+.card:hover{border-color:rgba(212,162,74,.35)}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.btn{cursor:pointer;border:none;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;font-family:inherit;transition:transform .12s,opacity .12s,box-shadow .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#b8862f);color:#1c1f2e;box-shadow:0 4px 14px rgba(212,162,74,.3)}
+.btn-soft{background:var(--accent-soft);color:var(--text);border:1px solid var(--accent)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--bad);border:1px solid rgba(248,113,113,.4);padding:6px 10px;font-size:12px}
+.btn-icon{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;font-size:12px;border-radius:8px;cursor:pointer}
+.btn-icon:hover{color:var(--accent);border-color:var(--accent)}
+input,select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:11px 13px;font-size:14px;font-family:inherit;width:100%;transition:border-color .15s}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px}
+.field{margin-bottom:14px}
+.header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#171a27;box-shadow:0 4px 16px rgba(212,162,74,.35);flex-shrink:0}
+.brand-icon i{font-size:24px}
+.brand h1{font-size:26px;font-weight:700;line-height:1.1}
+.brand .sub{font-size:12px;color:var(--muted)}
+.header .spacer{flex:1}
+.monthnav{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px}
+.monthnav button{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:8px}
+.monthnav button:hover{color:var(--accent);background:var(--accent-soft)}
+.monthnav select{background:transparent;border:none;color:var(--text);padding:6px 4px;font-size:14px;font-weight:600;width:auto;box-shadow:none}
+.monthnav select:focus{box-shadow:none}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:18px}
+.tab{cursor:pointer;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:7px;border:1px solid transparent;transition:all .18s}
+.tab.active{color:var(--text);background:var(--card);border-color:var(--border);box-shadow:inset 0 -2px 0 var(--accent)}
+.tab:hover:not(.active){color:var(--text);background:rgba(139,154,184,.06)}
+.panel{display:none}
+.panel.active{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch;margin-bottom:16px}
+.ring-card{flex:0 0 auto;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;align-items:center;gap:18px;min-width:280px}
+.ring{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring-inner{width:84px;height:84px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-inner .pct{font-size:22px;font-weight:700;font-family:'Cormorant Garamond',serif}
+.ring-inner .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.ring-info .big{font-size:22px;font-weight:700;font-family:'Cormorant Garamond',serif}
+.ring-info .row2{font-size:12.5px;color:var(--muted);margin-top:3px}
+.metrics{flex:1 1 300px;display:flex;flex-wrap:wrap;gap:12px;align-content:stretch}
+.metric{flex:1 1 150px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.7}
+.metric .lbl{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:6px;font-weight:600}
+.metric .lbl i{color:var(--accent)}
+.metric .val{font-size:21px;font-weight:700;font-family:'Cormorant Garamond',serif;line-height:1.15}
+.metric .sub{font-size:11.5px;margin-top:5px}
+.charts{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.chart-box{flex:1 1 320px}
+.chart-box h3{font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.chart-box h3 i{color:var(--accent2)}
+#catChart,#memberChart{height:270px;width:100%}
+.tips{margin-bottom:16px}
+.tip{display:flex;gap:10px;padding:11px 14px;border-radius:12px;background:var(--accent2-soft);border:1px solid var(--accent2);margin-bottom:8px;font-size:13.5px;line-height:1.55}
+.tip i{color:var(--accent2);flex-shrink:0;margin-top:2px}
+.tip.warn{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.5)}
+.tip.warn i{color:var(--warn)}
+.tip.bad{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.5)}
+.tip.bad i{color:var(--bad)}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-bottom:14px}
+.cat-chip{cursor:pointer;border:1px solid var(--border);border-radius:14px;padding:11px 6px;text-align:center;font-size:12px;color:var(--muted);transition:all .15s;background:var(--bg)}
+.cat-chip i{font-size:20px;display:block;margin-bottom:5px}
+.cat-chip.active{border-color:var(--accent);background:var(--accent-soft);color:var(--text);transform:translateY(-2px);box-shadow:0 4px 12px rgba(212,162,74,.2)}
+.member-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.mchip{cursor:pointer;padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;transition:all .15s}
+.mchip .dot{width:10px;height:10px;border-radius:50%}
+.mchip.active{border-color:var(--accent);background:var(--accent-soft);color:var(--text);font-weight:600;transform:translateY(-1px)}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;align-items:center}
+.quick button{cursor:pointer;background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:12px;font-family:inherit;transition:all .15s}
+.quick button:hover{border-color:var(--accent);color:var(--accent)}
+.momo-panel{border:1px solid var(--accent);background:linear-gradient(135deg,var(--accent-soft),rgba(79,168,147,.08));border-radius:16px;padding:16px;margin-top:14px;display:none}
+.momo-panel.show{display:block;animation:fade .25s ease}
+.qr-wrap{background:#fff;padding:12px;border-radius:14px;display:inline-block;margin:10px 0;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;margin:10px 0;user-select:none}
+.switch input{width:auto;accent-color:var(--accent)}
+.edit-banner{display:none;align-items:center;gap:10px;background:var(--accent2-soft);border:1px solid var(--accent2);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13.5px}
+.edit-banner.show{display:flex}
+.edit-banner i{color:var(--accent2)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px}
+th{text-align:left;color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:10px 8px;border-bottom:1px solid var(--border)}
+td{padding:10px 8px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(139,154,184,.05)}
+.pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600}
+.pill-ok{background:rgba(52,211,153,.15);color:var(--ok)}
+.pill-warn{background:rgba(251,191,36,.15);color:var(--warn)}
+.icon-sm{width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;margin-right:6px;vertical-align:middle}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+.empty i{font-size:36px;display:block;margin-bottom:10px;opacity:.5}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+.row .field{flex:1 1 140px}
+.member-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.member-row input{flex:1}
+.footer-note{margin-top:24px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7}
+.filter-total{font-size:13px;color:var(--muted);margin-top:10px}
+.filter-total strong{color:var(--accent)}
+@media(max-width:640px){.brand h1{font-size:21px}.ring-card{width:100%}.metric .val{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon"><i class="ri-bank-card-line"></i></div>
+      <div>
+        <h1>Tài Chính Gia Đình</h1>
+        <div class="sub"><i class="ri-shield-check-line"></i> Dữ liệu chỉ lưu trên máy của bạn · không cần đăng nhập</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="monthnav">
+      <button id="prevMonth" title="Tháng trước"><i class="ri-arrow-left-s-line"></i></button>
+      <select class="monthSel" id="monthSel"></select>
+      <button id="nextMonth" title="Tháng sau"><i class="ri-arrow-right-s-line"></i></button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="tongquan"><i class="ri-dashboard-line"></i> Tổng quan</div>
+    <div class="tab" data-tab="ghichi"><i class="ri-edit-line"></i> Ghi &amp; sửa chi tiêu</div>
+    <div class="tab" data-tab="lichsu"><i class="ri-history-line"></i> Lịch sử &amp; Xuất</div>
+    <div class="tab" data-tab="caitrang"><i class="ri-settings-3-line"></i> Cài đặt</div>
+  </div>
+
+  <!-- TONG QUAN -->
+  <div class="panel active" id="p-tongquan">
+    <div class="hero">
+      <div class="ring-card">
+        <div class="ring" id="ring">
+          <div class="ring-inner"><div class="pct num" id="ringPct">0%</div><div class="lbl">đã dùng</div></div>
+        </div>
+        <div class="ring-info">
+          <div class="big num" id="ringSpent">0 ₫</div>
+          <div class="row2 num">trong ngân sách <span id="ringBudget">10.000.000 ₫</span></div>
+          <div class="row2" id="ringNote" style="margin-top:6px;"></div>
+          <button class="btn-icon" id="btnEditBudget" style="margin-top:8px;"><i class="ri-edit-line"></i> Đổi ngân sách</button>
+        </div>
+      </div>
+      <div class="metrics" id="metrics"></div>
+    </div>
+
+    <div class="tips" id="tips"></div>
+
+    <div class="charts">
+      <div class="card chart-box">
+        <h3><i class="ri-pie-chart-line"></i> Chi tiêu theo danh mục</h3>
+        <div id="catChart"></div>
+      </div>
+      <div class="card chart-box">
+        <h3><i class="ri-group-line"></i> Chi tiêu theo thành viên</h3>
+        <div id="memberChart"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px;"><i class="ri-time-line" style="color:var(--accent)"></i> Giao dịch gần nhất <span class="muted" style="font-size:12px;font-weight:400;">(sửa bất kỳ khoản nào ở tab Lịch sử)</span></h3>
+      <div class="table-wrap"><table id="recentTable"><thead><tr><th>Ngày</th><th>Danh mục</th><th>Thành viên</th><th style="text-align:right">Số tiền</th><th>Ghi chú</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- GHI & SUA -->
+  <div class="panel" id="p-ghichi">
+    <div class="card">
+      <h2 style="font-size:20px;margin-bottom:4px;"><i class="ri-edit-line" style="color:var(--accent)"></i> <span id="formTitle">Ghi một khoản chi</span></h2>
+      <p class="muted" style="font-size:13px;margin-bottom:14px;">Chọn thành viên → nhập số tiền (hoặc bấm số nhanh) → chọn danh mục. Để <strong>sửa một khoản đã ghi</strong>, sang tab Lịch sử bấm icon bút chì.</p>
+
+      <div class="edit-banner" id="editBanner"><i class="ri-edit-fill"></i> <span>Đang sửa khoản chi — bấm "Cập nhật" khi xong, hoặc <a href="#" id="cancelEdit" style="color:var(--accent);text-decoration:underline;">hủy sửa</a>.</span></div>
+
+      <label>Thành viên chi</label>
+      <div class="member-chips" id="memberChips"></div>
+
+      <div class="row">
+        <div class="field" style="flex:2 1 200px">
+          <label>Số tiền (₫)</label>
+          <input type="number" id="fAmount" placeholder="VD: 50000" min="0" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>Ngày</label>
+          <input type="date" id="fDate">
+        </div>
+      </div>
+      <div class="quick" id="quickAmt">
+        <span style="font-size:12px;color:var(--muted);">Số nhanh:</span>
+        <button data-v="20000">20k</button><button data-v="50000">50k</button><button data-v="100000">100k</button><button data-v="200000">200k</button><button data-v="500000">500k</button><button data-v="1000000">1tr</button>
+      </div>
+
+      <label>Danh mục</label>
+      <div class="cat-grid" id="catGrid"></div>
+
+      <div class="field">
+        <label>Ghi chú (tùy chọn)</label>
+        <input type="text" id="fNote" placeholder="VD: Ăn trưa công ty, tiền điện tháng 10...">
+      </div>
+
+      <label class="switch"><input type="checkbox" id="fMomoToggle"> <i class="ri-flashlight-line" style="color:var(--accent)"></i> <strong>Thanh toán qua MoMo</strong> (tạo liên kết &amp; mã QR mở app MoMo)</label>
+
+      <div class="momo-panel" id="momoPanel">
+        <div class="row">
+          <div class="field" style="flex:2 1 200px">
+            <label>Số điện thoại người nhận (tiền chuyển đến)</label>
+            <input type="tel" id="fMomoPhone" placeholder="VD: 0901234567" inputmode="numeric">
+          </div>
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:8px;">
+          <i class="ri-information-line"></i> Nút bên dưới mở <strong>link nhận tiền MoMo chính thức</strong> (<span class="num">nhantien.momo.vn</span>) — trên điện thoại tự mở app MoMo để xác nhận chuyển. <strong>Web không lưu và không yêu cầu đăng nhập MoMo.</strong> Sau khi trả xong, nhấn "Đã thanh toán" để ghi nhận.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <button class="btn btn-primary" id="btnOpenMomo"><i class="ri-external-link-line"></i> Mở MoMo thanh toán</button>
+          <button class="btn btn-soft" id="btnShowQR"><i class="ri-qr-code-line"></i> Hiện mã QR để quét</button>
+        </div>
+        <div id="qrBox" style="display:none;margin-top:10px;">
+          <div class="qr-wrap" id="qrCode"></div>
+          <p style="font-size:12px;color:var(--muted);">Mở app MoMo → Quét mã QR → xác nhận chuyển khoản.</p>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);">
+          <button class="btn btn-soft" id="btnPaid"><i class="ri-checkbox-circle-line"></i> Đã thanh toán — ghi nhận khoản chi</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btnSave"><i class="ri-save-line"></i> <span id="btnSaveLabel">Lưu khoản chi</span></button>
+        <button class="btn btn-ghost" id="btnReset"><i class="ri-refresh-line"></i> Nhập lại</button>
+      </div>
+      <p id="saveMsg" style="margin-top:10px;font-size:13px;color:var(--ok);display:none;"></p>
+    </div>
+  </div>
+
+  <!-- LICH SU -->
+  <div class="panel" id="p-lichsu">
+    <div class="card" style="margin-bottom:12px;">
+      <div class="row">
+        <div class="field" style="flex:1 1 150px"><label>Lọc thành viên</label><select id="filterMember"><option value="">Tất cả</option></select></div>
+        <div class="field" style="flex:1 1 150px"><label>Lọc danh mục</label><select id="filterCat"><option value="">Tất cả</option></select></div>
+        <div class="field" style="flex:2 1 200px"><label><i class="ri-search-line"></i> Tìm theo ghi chú</label><input type="text" id="filterSearch" placeholder="Gõ từ khóa..."></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-soft" id="btnExportCSV"><i class="ri-file-excel-2-line"></i> Xuất CSV (Excel)</button>
+        <div class="filter-total" id="filterTotal"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table id="histTable">
+          <thead><tr><th>Ngày</th><th>Danh mục</th><th>Thành viên</th><th style="text-align:right">Số tiền</th><th>Ghi chú</th><th>HTTT</th><th style="text-align:center">Sửa</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="histEmpty" style="display:none;"><i class="ri-inbox-line"></i> Chưa có giao dịch nào. Hãy sang tab "Ghi &amp; sửa chi tiêu" để thêm khoản đầu tiên.</div>
+    </div>
+  </div>
+
+  <!-- CAI DAT -->
+  <div class="panel" id="p-caitrang">
+    <div class="card" style="margin-bottom:12px;">
+      <h3 style="font-size:17px;margin-bottom:12px;"><i class="ri-group-line" style="color:var(--accent2)"></i> Thành viên gia đình</h3>
+      <div id="memberList"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <input type="text" id="newMemberName" placeholder="Tên thành viên mới" style="flex:1 1 160px;width:auto">
+        <button class="btn btn-soft" id="btnAddMember"><i class="ri-user-add-line"></i> Thêm</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <h3 style="font-size:17px;margin-bottom:12px;"><i class="ri-wallet-3-line" style="color:var(--accent2)"></i> Ngân sách &amp; MoMo mặc định</h3>
+      <div class="row">
+        <div class="field"><label>Ngân sách tổng / tháng (₫)</label><input type="number" id="setBudget" min="0"></div>
+        <div class="field"><label>SĐT MoMo nhận tiền mặc định</label><input type="tel" id="setMomoPhone" placeholder="0901234567"></div>
+      </div>
+      <button class="btn btn-primary" id="btnSaveSettings"><i class="ri-save-line"></i> Lưu cài đặt</button>
+      <span id="setMsg" style="margin-left:10px;font-size:13px;color:var(--ok);display:none;">Đã lưu</span>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <h3 style="font-size:17px;margin-bottom:12px;"><i class="ri-database-2-line" style="color:var(--accent2)"></i> Sao lưu &amp; khôi phục dữ liệu</h3>
+      <p class="muted" style="font-size:13px;margin-bottom:10px;">Dữ liệu lưu trên trình duyệt của thiết bị này. Để dùng chung cho gia đình trên nhiều máy, xuất file JSON và gửi cho nhau, sau đó nhập lại.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-soft" id="btnExportJSON"><i class="ri-download-line"></i> Xuất file JSON</button>
+        <label class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><i class="ri-upload-line"></i> Nhập file JSON<input type="file" id="importFile" accept=".json" style="display:none"></label>
+        <button class="btn btn-ghost" id="btnSample"><i class="ri-flashlight-line"></i> Tải dữ liệu mẫu</button>
+        <button class="btn btn-danger" id="btnClear" style="padding:10px 16px;font-size:14px;"><i class="ri-delete-bin-line"></i> Xóa toàn bộ dữ liệu</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:17px;margin-bottom:8px;"><i class="ri-shield-check-line" style="color:var(--accent2)"></i> Bảo mật &amp; cách hoạt động</h3>
+      <ul style="font-size:13px;color:var(--muted);line-height:1.8;padding-left:18px;">
+        <li>App chạy hoàn toàn trên trình duyệt của bạn, <strong>không có server, không gửi dữ liệu đi đâu</strong>.</li>
+        <li>Liên kết MoMo chỉ là đường dẫn công khai <span class="num">nhantien.momo.vn</span> — mở app MoMo có sẵn trên điện thoại. <strong>Không bao giờ yêu cầu mật khẩu hay OTP MoMo.</strong></li>
+        <li>Không can thiệp vào app MoMo cá nhân của ai; mỗi người chỉ ghi/sửa chi tiêu của mình vào sổ chung.</li>
+        <li>Gợi ý tiết kiệm là phân tích dựa trên quy tắc từ chính dữ liệu gia đình bạn — không gọi AI bên ngoài, dữ liệu không rời khỏi máy.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <i class="ri-information-line"></i> Mẹo: Mở bằng Chrome/Safari → "Thêm vào màn hình chính" để dùng như app. Mọi thao tác thêm/sửa/xoá đều tự lưu ngay.
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var KEY='family-finance-v1';
+var DEFAULT_CATS=[
+  {id:'an',name:'Ăn uống',icon:'ri-restaurant-line',color:'#f59e0b'},
+  {id:'di',name:'Đi lại',icon:'ri-car-line',color:'#3b82f6'},
+  {id:'mua',name:'Mua sắm',icon:'ri-shopping-bag-line',color:'#ec4899'},
+  {id:'hoa',name:'Hóa đơn',icon:'ri-file-list-3-line',color:'#8b5cf6'},
+  {id:'giai',name:'Giải trí',icon:'ri-gamepad-line',color:'#14b8a6'},
+  {id:'suc',name:'Sức khỏe',icon:'ri-heart-pulse-line',color:'#ef4444'},
+  {id:'giao',name:'Giáo dục',icon:'ri-book-open-line',color:'#0ea5e9'},
+  {id:'tiet',name:'Tiết kiệm',icon:'ri-piggy-bank-line',color:'#22c55e'},
+  {id:'khac',name:'Khác',icon:'ri-more-line',color:'#94a3b8'}
+];
+var MEMBER_COLORS=['#d4a24a','#4fa893','#3b82f6','#ec4899','#14b8a6','#f59e0b'];
+var state=load();
+var editingId=null;
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&d.expenses)return d;}}catch(e){}
+  return {members:[{id:'m1',name:'Tôi',color:MEMBER_COLORS[0]},{id:'m2',name:'Người nhà',color:MEMBER_COLORS[1]}],
+    categories:DEFAULT_CATS,budget:10000000,momoPhone:'',expenses:[]};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function uid(){return 'e'+Date.now()+Math.floor(Math.random()*1000);}
+function fmt(n){return new Intl.NumberFormat('vi-VN').format(Math.round(n||0))+' ₫';}
+function catById(id){for(var i=0;i<state.categories.length;i++)if(state.categories[i].id===id)return state.categories[i];return state.categories[state.categories.length-1];}
+function memById(id){for(var i=0;i<state.members.length;i++)if(state.members[i].id===id)return state.members[i];return state.members[0]||{name:'?',color:'#888'};}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function monthOf(iso){return iso?iso.slice(0,7):'';}
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.tab===name);});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('active',p.id==='p-'+name);});
+  if(name==='tongquan')renderOverview();
+  if(name==='lichsu')renderHistory();
+  if(name==='caitrang')renderSettings();
+}
+document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){switchTab(t.dataset.tab);});});
+
+var monthSel=document.getElementById('monthSel');
+function buildMonthOptions(){
+  var months={};state.expenses.forEach(function(e){months[monthOf(e.date)]=true;});
+  var cur=todayISO().slice(0,7);months[cur]=true;
+  var list=Object.keys(months).sort().reverse();
+  monthSel.innerHTML='';
+  list.forEach(function(m){var o=document.createElement('option');o.value=m;var p=m.split('-');o.textContent='Tháng '+p[1]+' / '+p[0];monthSel.appendChild(o);});
+  monthSel.value=cur;
+}
+monthSel.addEventListener('change',renderOverview);
+function shiftMonth(delta){
+  var v=monthSel.value||todayISO().slice(0,7);var p=v.split('-');
+  var y=Number(p[0]),m=Number(p[1])+delta;
+  if(m<1){m=12;y--;}if(m>12){m=1;y++;}
+  var nv=y+'-'+String(m).padStart(2,'0');
+  if(!monthSel.querySelector('option[value="'+nv+'"]')){var o=document.createElement('option');o.value=nv;o.textContent='Tháng '+String(m).padStart(2,'0')+' / '+y;monthSel.appendChild(o);}
+  monthSel.value=nv;renderOverview();
+}
+document.getElementById('prevMonth').addEventListener('click',function(){shiftMonth(-1);});
+document.getElementById('nextMonth').addEventListener('click',function(){shiftMonth(1);});
+function currentMonth(){return monthSel.value||todayISO().slice(0,7);}
+function expensesOfMonth(){var m=currentMonth();return state.expenses.filter(function(e){return monthOf(e.date)===m;});}
+
+var catChartInst=null,memberChartInst=null;
+function renderOverview(){
+  var list=expensesOfMonth();
+  var total=list.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var budget=Number(state.budget)||0;
+  var remain=budget-total;
+  var daysInMonth=new Date(currentMonth().slice(0,4),Number(currentMonth().slice(5,7)),0).getDate();
+  var dayNow=Math.min(new Date().getDate(),daysInMonth);
+  var avgPerDay=total/Math.max(dayNow,1);
+  var forecast=avgPerDay*daysInMonth;
+  var pct=budget>0?Math.min(100,total/budget*100):0;
+  var col=pct>90?'#f87171':(pct>70?'#fbbf24':'#d4a24a');
+
+  document.getElementById('ringPct').textContent=Math.round(pct)+'%';
+  document.getElementById('ringPct').style.color=pct>90?'#f87171':(pct>70?'#fbbf24':'var(--text)');
+  document.getElementById('ring').style.background='conic-gradient('+col+' '+pct+'%, rgba(139,154,184,.15) '+pct+'%)';
+  document.getElementById('ringSpent').textContent=fmt(total);
+  document.getElementById('ringBudget').textContent=fmt(budget);
+  document.getElementById('ringNote').innerHTML=budget>0
+    ?'Còn lại: <strong style="color:'+(remain<0?'var(--bad)':'var(--ok)')+'">'+fmt(remain)+'</strong>'
+    :'<span style="color:var(--warn)">Chưa đặt ngân sách</span>';
+
+  document.getElementById('metrics').innerHTML=
+    metricHTML('ri-calendar-todo-line','Trung bình / ngày',fmt(avgPerDay),'')+
+    metricHTML('ri-error-warning-line','Dự báo cuối tháng',fmt(forecast),forecast>budget?'<span style="color:var(--bad)">Có thể vượt '+fmt(forecast-budget)+'</span>':'<span style="color:var(--ok)">Trong ngân sách</span>')+
+    metricHTML('ri-list-check-2','Số giao dịch',String(list.length),'tháng này');
+
+  renderTips(list,total,budget,forecast,avgPerDay,daysInMonth);
+  renderCharts(list);
+  renderRecent(list);
+}
+function metricHTML(icon,lbl,val,sub){
+  return '<div class="metric"><div class="lbl"><i class="'+icon+'"></i>'+lbl+'</div><div class="val num">'+val+'</div><div class="sub">'+sub+'</div></div>';
+}
+function renderTips(list,total,budget,forecast,avgPerDay,daysInMonth){
+  var box=document.getElementById('tips');box.innerHTML='';
+  var tips=[];
+  if(budget>0&&total>budget*0.9)tips.push({cls:'bad',icon:'ri-error-warning-line',text:'Đã dùng '+Math.round(total/budget*100)+'% ngân sách. Cần siết lại ngay: ưu tiên chỉ chi cho nhu cầu thiết yếu những ngày còn lại.'});
+  else if(budget>0&&total>budget*0.7)tips.push({cls:'warn',icon:'ri-alert-line',text:'Đã dùng '+Math.round(total/budget*100)+'% ngân sách. Cân nhắc hoãn các khoản mua sắm không thiết yếu.'});
+  var byCat={};list.forEach(function(e){byCat[e.catId]=(byCat[e.catId]||0)+Number(e.amount||0);});
+  var topCat=null,topVal=0;Object.keys(byCat).forEach(function(k){if(byCat[k]>topVal){topVal=byCat[k];topCat=k;}});
+  if(topCat&&total>0&&topVal/total>0.3){var c=catById(topCat);tips.push({cls:'',icon:'ri-pie-chart-line',text:'Danh mục "'+c.name+'" chiếm '+Math.round(topVal/total*100)+'% chi tiêu — cao hơn ngưỡng 30%. Đề xuất: đặt ngân sách riêng cho mục này và cắt giảm ~10% tháng sau.'});}
+  var cur=currentMonth();var parts=cur.split('-');var prev=(parts[1]==='01')?(Number(parts[0])-1)+'-12':parts[0]+'-'+String(Number(parts[1])-1).padStart(2,'0');
+  var prevTotal=state.expenses.filter(function(e){return monthOf(e.date)===prev;}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+  if(prevTotal>0){var diff=total-prevTotal;var pct=Math.round((diff/prevTotal)*100);
+    if(diff>0)tips.push({cls:'warn',icon:'ri-arrow-up-circle-line',text:'Tháng này chi nhiều hơn tháng trước '+fmt(diff)+' (+'+pct+'%). Hãy xem lại danh mục tăng đột biến (tab Tổng quan).'});
+    else if(diff<0)tips.push({cls:'',icon:'ri-arrow-down-circle-line',text:'Tốt lắm! Chi tiêu giảm '+fmt(-diff)+' ('+Math.abs(pct)+'%) so với tháng trước. Duy trì nhịp này.'});}
+  if(avgPerDay>0){var cut=Math.min(30000,Math.round(avgPerDay*0.1));tips.push({cls:'',icon:'ri-lightbulb-line',text:'Mẹo: giảm '+fmt(cut)+'/ngày (≈1 ly cà phê) cả tháng để dành thêm '+fmt(cut*daysInMonth)+'.'});}
+  if(!tips.length)tips.push({cls:'',icon:'ri-sparkling-line',text:'Hãy ghi đều đặn mỗi ngày — sau 1 tháng bạn sẽ biết chính xác tiền đã đi đâu và bắt đầu điều chỉnh được.'});
+  tips.forEach(function(t){var d=document.createElement('div');d.className='tip '+(t.cls||'');d.innerHTML='<i class="'+t.icon+'"></i><span>'+t.text+'</span>';box.appendChild(d);});
+}
+function renderCharts(list){
+  var byCat={};list.forEach(function(e){byCat[e.catId]=(byCat[e.catId]||0)+Number(e.amount||0);});
+  var catData=Object.keys(byCat).map(function(k){var c=catById(k);return {name:c.name,value:Math.round(byCat[k]),itemStyle:{color:c.color}};});
+  var byMem={};list.forEach(function(e){byMem[e.memberId]=(byMem[e.memberId]||0)+Number(e.amount||0);});
+  var memNames=state.members.map(function(m){return m.name;});
+  var memVals=state.members.map(function(m){return Math.round(byMem[m.id]||0);});
+  var memColors=state.members.map(function(m){return m.color;});
+  var memTotal=memVals.reduce(function(s,v){return s+v;},0);
+  function initCharts(n){
+    if(typeof echarts==='undefined'){if(n<30){setTimeout(function(){initCharts(n+1)},200);}return;}
+    var el1=document.getElementById('catChart');var el2=document.getElementById('memberChart');
+    if(el1){if(catChartInst)catChartInst.dispose();catChartInst=echarts.init(el1);
+      catChartInst.setOption({backgroundColor:'transparent',tooltip:{trigger:'item',backgroundColor:'#222638',borderColor:'rgba(139,154,184,.16)',textStyle:{color:'#eef1f8'},formatter:function(p){return p.name+': '+new Intl.NumberFormat('vi-VN').format(p.value)+' ₫ ('+p.percent+'%)';}},
+        legend:{bottom:0,textStyle:{color:'#8b9ab8',fontSize:11},type:'scroll'},
+        series:[{type:'pie',radius:['45%','70%'],center:['50%','42%'],label:{color:'#8b9ab8',fontSize:11},data:catData.length?catData:[{name:'Chưa có dữ liệu',value:1,itemStyle:{color:'#3a3f55'}}]}]});
+      window.addEventListener('resize',function(){catChartInst.resize();});
+    }
+    if(el2){if(memberChartInst)memberChartInst.dispose();memberChartInst=echarts.init(el2);
+      memberChartInst.setOption({backgroundColor:'transparent',tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#222638',borderColor:'rgba(139,154,184,.16)',textStyle:{color:'#eef1f8'},formatter:function(p){return p[0].name+': '+new Intl.NumberFormat('vi-VN').format(p[0].value)+' ₫';}},
+        grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},
+        xAxis:{type:'category',data:memNames,axisLabel:{color:'#8b9ab8'},axisTick:{show:false}},
+        yAxis:{type:'value',min:0,max:memTotal>0?null:1000000,axisLabel:{color:'#8b9ab8',formatter:function(v){return (v/1000000).toFixed(1)+'tr';}},splitLine:{lineStyle:{color:'rgba(139,154,184,.12)'}}},
+        series:[{type:'bar',data:memVals.map(function(v,i){return {value:v,itemStyle:{color:memColors[i],borderRadius:[6,6,0,0]}};}),barWidth:'45%'}]});
+      window.addEventListener('resize',function(){memberChartInst.resize();});
+    }
+  }
+  initCharts(0);
+}
+function renderRecent(list){
+  var tb=document.querySelector('#recentTable tbody');tb.innerHTML='';
+  var recent=list.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,6);
+  if(!recent.length){tb.innerHTML='<tr><td colspan="5" class="empty" style="padding:20px"><i class="ri-inbox-line" style="font-size:24px"></i>Chưa có giao dịch tháng này</td></tr>';return;}
+  recent.forEach(function(e){
+    var c=catById(e.catId),m=memById(e.memberId);
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="muted">'+e.date.slice(8,10)+'/'+e.date.slice(5,7)+'</td>'+
+      '<td><span class="icon-sm" style="background:'+c.color+'22;color:'+c.color+'"><i class="'+c.icon+'"></i></span>'+c.name+'</td>'+
+      '<td><span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+m.color+';margin-right:6px"></span>'+m.name+'</td>'+
+      '<td style="text-align:right" class="num">'+fmt(e.amount)+'</td>'+
+      '<td class="muted">'+(e.note||'')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+
+var selMember=state.members[0]?state.members[0].id:null;
+var selCat='an';
+function renderMemberChips(){
+  var box=document.getElementById('memberChips');box.innerHTML='';
+  state.members.forEach(function(m){
+    var b=document.createElement('div');b.className='mchip'+(m.id===selMember?' active':'');
+    b.innerHTML='<span class="dot" style="background:'+m.color+'"></span>'+m.name;
+    b.addEventListener('click',function(){selMember=m.id;renderMemberChips();});
+    box.appendChild(b);
+  });
+}
+function renderCatGrid(){
+  var box=document.getElementById('catGrid');box.innerHTML='';
+  state.categories.forEach(function(c){
+    var d=document.createElement('div');d.className='cat-chip'+(c.id===selCat?' active':'');
+    d.innerHTML='<i class="'+c.icon+'" style="color:'+c.color+'"></i>'+c.name;
+    d.addEventListener('click',function(){selCat=c.id;renderCatGrid();});
+    box.appendChild(d);
+  });
+}
+document.getElementById('fDate').value=todayISO();
+renderMemberChips();renderCatGrid();
+
+document.querySelectorAll('#quickAmt button').forEach(function(b){
+  b.addEventListener('click',function(){
+    var cur=Number(document.getElementById('fAmount').value||0);
+    document.getElementById('fAmount').value=cur+Number(b.dataset.v);
+  });
+});
+
+var momoToggle=document.getElementById('fMomoToggle');
+var momoPanel=document.getElementById('momoPanel');
+momoToggle.addEventListener('change',function(){
+  momoPanel.classList.toggle('show',momoToggle.checked);
+  if(momoToggle.checked&&!document.getElementById('fMomoPhone').value)document.getElementById('fMomoPhone').value=state.momoPhone||'';
+});
+document.getElementById('fMomoPhone').value=state.momoPhone||'';
+
+function momoLink(){
+  var phone=(document.getElementById('fMomoPhone').value||'').replace(/\D/g,'');
+  if(!phone)return null;
+  return 'https://nhantien.momo.vn/'+phone;
+}
+document.getElementById('btnOpenMomo').addEventListener('click',function(){
+  var url=momoLink();if(!url){alert('Vui lòng nhập số điện thoại người nhận.');return;}
+  window.open(url,'_blank');
+});
+document.getElementById('btnShowQR').addEventListener('click',function(){
+  var url=momoLink();if(!url){alert('Vui lòng nhập số điện thoại người nhận.');return;}
+  var box=document.getElementById('qrBox');box.style.display='block';
+  var qc=document.getElementById('qrCode');qc.innerHTML='';
+  if(typeof QRCode!=='undefined'){new QRCode(qc,{text:url,width:180,height:180,colorDark:'#0f172a',colorLight:'#ffffff'});}
+  else{qc.textContent='Đang tải thư viện QR...';}
+});
+function collectExpense(){
+  var amount=Number(document.getElementById('fAmount').value||0);
+  if(!amount||amount<=0){alert('Vui lòng nhập số tiền hợp lệ.');return null;}
+  if(!selMember){alert('Vui lòng chọn thành viên.');return null;}
+  return {memberId:selMember,catId:selCat,amount:amount,
+    date:document.getElementById('fDate').value||todayISO(),
+    note:document.getElementById('fNote').value||'',
+    viaMomo:momoToggle.checked,momoPhone:momoToggle.checked?document.getElementById('fMomoPhone').value:''};
+}
+function showMsg(txt){var m=document.getElementById('saveMsg');m.textContent=txt;m.style.display='block';setTimeout(function(){m.style.display='none';},2500);}
+function resetForm(){
+  editingId=null;
+  document.getElementById('editBanner').classList.remove('show');
+  document.getElementById('formTitle').textContent='Ghi một khoản chi';
+  document.getElementById('btnSaveLabel').textContent='Lưu khoản chi';
+  document.getElementById('fAmount').value='';document.getElementById('fNote').value='';
+  document.getElementById('fDate').value=todayISO();
+  momoToggle.checked=false;momoPanel.classList.remove('show');
+  document.getElementById('qrBox').style.display='none';
+}
+document.getElementById('btnSave').addEventListener('click',function(){
+  var e=collectExpense();if(!e)return;
+  if(editingId){
+    var idx=state.expenses.findIndex(function(x){return x.id===editingId;});
+    if(idx>-1){state.expenses[idx]=Object.assign({},state.expenses[idx],e);showMsg('Đã cập nhật khoản chi thành '+fmt(e.amount));}
+  }else{
+    e.id=uid();e.status='paid';state.expenses.push(e);showMsg('Đã lưu khoản chi '+fmt(e.amount));
+  }
+  save();buildMonthOptions();resetForm();renderMemberChips();
+});
+document.getElementById('btnPaid').addEventListener('click',function(){
+  var e=collectExpense();if(!e)return;
+  if(editingId){var idx=state.expenses.findIndex(function(x){return x.id===editingId;});if(idx>-1){state.expenses[idx]=Object.assign({},state.expenses[idx],e);showMsg('Đã cập nhật: '+fmt(e.amount));}}
+  else{e.id=uid();e.status='paid';state.expenses.push(e);showMsg('Đã ghi nhận thanh toán MoMo: '+fmt(e.amount));}
+  save();buildMonthOptions();resetForm();
+});
+document.getElementById('btnReset').addEventListener('click',resetForm);
+document.getElementById('cancelEdit').addEventListener('click',function(ev){ev.preventDefault();resetForm();});
+
+function startEdit(id){
+  var e=state.expenses.find(function(x){return x.id===id;});if(!e)return;
+  editingId=id;
+  selMember=e.memberId;selCat=e.catId;
+  document.getElementById('fAmount').value=e.amount;
+  document.getElementById('fDate').value=e.date;
+  document.getElementById('fNote').value=e.note||'';
+  momoToggle.checked=!!e.viaMomo;
+  momoPanel.classList.toggle('show',!!e.viaMomo);
+  document.getElementById('fMomoPhone').value=e.momoPhone||state.momoPhone||'';
+  document.getElementById('qrBox').style.display='none';
+  document.getElementById('editBanner').classList.add('show');
+  document.getElementById('formTitle').textContent='Sửa khoản chi';
+  document.getElementById('btnSaveLabel').textContent='Cập nhật khoản chi';
+  renderMemberChips();renderCatGrid();
+  switchTab('ghichi');
+  document.getElementById('fAmount').focus();
+}
+
+function renderHistory(){
+  var fm=document.getElementById('filterMember'),fc=document.getElementById('filterCat'),fs=document.getElementById('filterSearch');
+  var curM=fm.value,curC=fc.value,curS=(fs.value||'').toLowerCase();
+  fm.innerHTML='<option value="">Tất cả</option>';state.members.forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.name;fm.appendChild(o);});fm.value=curM;
+  fc.innerHTML='<option value="">Tất cả</option>';state.categories.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;fc.appendChild(o);});fc.value=curC;
+  var tb=document.querySelector('#histTable tbody');tb.innerHTML='';
+  var list=state.expenses.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  if(fm.value)list=list.filter(function(e){return e.memberId===fm.value;});
+  if(fc.value)list=list.filter(function(e){return e.catId===fc.value;});
+  if(curS)list=list.filter(function(e){return ((e.note||'')+' '+catById(e.catId).name+' '+memById(e.memberId).name).toLowerCase().indexOf(curS)>-1;});
+  var sum=list.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  document.getElementById('filterTotal').innerHTML='Đang hiển thị <strong>'+list.length+'</strong> giao dịch · tổng <strong class="num">'+fmt(sum)+'</strong>';
+  document.getElementById('histEmpty').style.display=list.length?'none':'block';
+  list.forEach(function(e){
+    var c=catById(e.catId),m=memById(e.memberId);
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="muted">'+e.date+'</td>'+
+      '<td><span class="icon-sm" style="background:'+c.color+'22;color:'+c.color+'"><i class="'+c.icon+'"></i></span>'+c.name+'</td>'+
+      '<td><span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+m.color+';margin-right:6px"></span>'+m.name+'</td>'+
+      '<td style="text-align:right" class="num">'+fmt(e.amount)+'</td>'+
+      '<td class="muted">'+(e.note||'')+'</td>'+
+      '<td>'+(e.viaMomo?'<span class="pill pill-ok">MoMo</span>':'<span class="pill pill-warn">Tay</span>')+'</td>'+
+      '<td style="text-align:center"><button class="btn-icon" data-edit="'+e.id+'" title="Sửa khoản này"><i class="ri-edit-line"></i></button></td>'+
+      '<td><button class="btn btn-danger" data-del="'+e.id+'"><i class="ri-delete-bin-line"></i></button></td>';
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('[data-edit]').forEach(function(b){b.addEventListener('click',function(){startEdit(b.dataset.edit);});});
+  tb.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(){
+    if(confirm('Xóa khoản chi này?')){state.expenses=state.expenses.filter(function(x){return x.id!==b.dataset.del;});save();renderHistory();buildMonthOptions();}
+  });});
+}
+document.getElementById('filterMember').addEventListener('change',renderHistory);
+document.getElementById('filterCat').addEventListener('change',renderHistory);
+document.getElementById('filterSearch').addEventListener('input',renderHistory);
+document.getElementById('btnExportCSV').addEventListener('click',function(){
+  var rows=[['Ngày','Thành viên','Danh mục','Số tiền','Ghi chú','Hình thức']];
+  state.expenses.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).forEach(function(e){
+    rows.push([e.date,memById(e.memberId).name,catById(e.catId).name,String(e.amount),e.note||'',e.viaMomo?'MoMo':'Tay']);
+  });
+  var csv='\ufeff'+rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chi-tieu-gia-dinh.csv';a.click();
+});
+
+function renderSettings(){
+  document.getElementById('setBudget').value=state.budget||'';
+  document.getElementById('setMomoPhone').value=state.momoPhone||'';
+  var box=document.getElementById('memberList');box.innerHTML='';
+  state.members.forEach(function(m){
+    var row=document.createElement('div');row.className='member-row';
+    row.innerHTML='<span class="dot" style="width:14px;height:14px;border-radius:50%;background:'+m.color+';flex-shrink:0"></span>'+
+      '<input type="text" value="'+m.name+'" data-mid="'+m.id+'">'+
+      '<button class="btn btn-danger" data-delm="'+m.id+'"><i class="ri-delete-bin-line"></i></button>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-mid]').forEach(function(inp){inp.addEventListener('change',function(){
+    var m=state.members.find(function(x){return x.id===inp.dataset.mid;});if(m){m.name=inp.value||m.name;save();renderMemberChips();}
+  });});
+  box.querySelectorAll('[data-delm]').forEach(function(b){b.addEventListener('click',function(){
+    if(state.members.length<=1){alert('Cần ít nhất 1 thành viên.');return;}
+    if(confirm('Xóa thành viên này? Các khoản chi của họ vẫn giữ nguyên.')){
+      state.members=state.members.filter(function(x){return x.id!==b.dataset.delm;});
+      if(selMember===b.dataset.delm)selMember=state.members[0].id;
+      save();renderSettings();renderMemberChips();
+    }
+  });});
+}
+document.getElementById('btnAddMember').addEventListener('click',function(){
+  var name=document.getElementById('newMemberName').value.trim();if(!name)return;
+  state.members.push({id:'m'+Date.now(),name:name,color:MEMBER_COLORS[state.members.length%MEMBER_COLORS.length]});
+  document.getElementById('newMemberName').value='';save();renderSettings();renderMemberChips();
+});
+document.getElementById('btnSaveSettings').addEventListener('click',function(){
+  state.budget=Number(document.getElementById('setBudget').value)||0;
+  state.momoPhone=document.getElementById('setMomoPhone').value.replace(/\D/g,'');
+  save();var m=document.getElementById('setMsg');m.style.display='inline';setTimeout(function(){m.style.display='none';},2000);renderOverview();
+});
+document.getElementById('btnEditBudget').addEventListener('click',function(){
+  var v=prompt('Nhập ngân sách tổng cho tháng (VNĐ):',String(state.budget||''));
+  if(v!==null){state.budget=Number(String(v).replace(/\D/g,''))||0;save();renderOverview();}
+});
+document.getElementById('btnExportJSON').addEventListener('click',function(){
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='du-lieu-tai-chinh-gia-dinh.json';a.click();
+});
+document.getElementById('importFile').addEventListener('change',function(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{var d=JSON.parse(r.result);if(d&&d.expenses&&d.members){state=d;save();buildMonthOptions();renderMemberChips();renderCatGrid();alert('Đã nhập dữ liệu thành công.');renderOverview();}else alert('File không hợp lệ.');}
+    catch(e){alert('File không hợp lệ.');}
+  };r.readAsText(f);
+});
+document.getElementById('btnSample').addEventListener('click',function(){
+  if(!confirm('Tải dữ liệu mẫu sẽ ghi đè dữ liệu hiện có. Tiếp tục?'))return;
+  var today=new Date();var ym=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');
+  var sample=[['an',35000,'Ăn trưa'],['di',25000,'Đi làm Grab'],['mua',450000,'Mua sắm'],['hoa',1200000,'Tiền điện nước'],['an',120000,'Ăn tối gia đình'],['giai',200000,'Xem phim'],['suc',350000,'Thuốc'],['an',45000,'Cà phê'],['di',60000,'Xăng'],['tiet',1000000,'Gửi tiết kiệm']];
+  state.expenses=sample.map(function(s,i){return {id:uid(),memberId:state.members[i%2].id,catId:s[0],amount:s[1],date:ym+'-'+String((i%27)+1).padStart(2,'0'),note:s[2],viaMomo:i%3===0,status:'paid'};});
+  save();buildMonthOptions();renderOverview();alert('Đã tải dữ liệu mẫu. Hãy sang tab Tổng quan để xem.');
+});
+document.getElementById('btnClear').addEventListener('click',function(){
+  if(confirm('XÓA TOÀN BỘ dữ liệu? Hành động này không hoàn tác được.')){
+    localStorage.removeItem(KEY);state=load();selMember=state.members[0].id;selCat='an';editingId=null;
+    buildMonthOptions();renderMemberChips();renderCatGrid();renderSettings();renderOverview();
+  }
+});
+
+buildMonthOptions();
+renderOverview();
+})();
+</script>
+</body>
+</html>
